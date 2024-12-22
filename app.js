@@ -198,20 +198,42 @@ function toggle_visibility(ids) {
 }
 
 
-$("#save").on("click",function(){
-    if(localStorage.getItem("imageSrc") == "" || localStorage.getItem("imageSrc") == null || document.getElementById('imagediv').innerHTML == ""){
+$("#save").on("click", function () {
+    // Check if fingerprint data is available in localStorage
+    const fingerprintData = JSON.parse(localStorage.getItem("fingerprintData"));
+    
+    if (!fingerprintData || fingerprintData.image === "" || fingerprintData.hash === "") {
         alert("Error -> Fingerprint not available");
-    }else{
+    } else {
         var vDiv = document.getElementById('imageGallery');
-        if(vDiv.children.length < 5){
+        
+        // Only add up to 5 images
+        if (vDiv.children.length < 5) {
+            // Create a new div to hold both image and hash
+            var galleryItem = document.createElement("div");
+            galleryItem.className = "gallery-item";
+            
+            // Create and append the image element
             var image = document.createElement("img");
             image.id = "galleryImage";
             image.className = "img-thumbnail";
-            image.src = localStorage.getItem("imageSrc");
-            vDiv.appendChild(image);
+            image.src = fingerprintData.image;  // Use the Base64 image from localStorage
+            galleryItem.appendChild(image);
+            
+            // Create and append the hash element
+            var hash = document.createElement("p");
+            hash.className = "fingerprint-hash";
+            hash.textContent = "Hash: " + fingerprintData.hash;  // Use the fingerprint hash from localStorage
+            galleryItem.appendChild(hash);
+            
+            // Append the gallery item (image + hash) to the gallery
+            vDiv.appendChild(galleryItem);
 
-            localStorage.setItem("imageSrc"+vDiv.children.length,localStorage.getItem("imageSrc"));
-        }else{
+            // Optionally, store the fingerprint image and hash in localStorage for future use
+            localStorage.setItem("imageSrc" + vDiv.children.length, fingerprintData.image);
+            localStorage.setItem("fingerprintHash" + vDiv.children.length, fingerprintData.hash);
+        } else {
+            // Clear the gallery and try saving again
             document.getElementById('imageGallery').innerHTML = "";
             $("#save").click();
         }
