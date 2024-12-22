@@ -234,37 +234,43 @@ function populateReaders(readersArray) {
         }
     };
 
-function sampleAcquired(s) {   
-        if (currentFormat == Fingerprint.SampleFormat.PngImage) {   
-            // If sample acquired format is PNG- perform following call on object received 
+    function sampleAcquired(s) {
+        if (currentFormat == Fingerprint.SampleFormat.PngImage) {
+            // If sample acquired format is PNG - perform the following call on object received
             // Get samples from the object - get 0th element of samples as base 64 encoded PNG image         
             localStorage.setItem("imageSrc", "");                
             var samples = JSON.parse(s.samples);            
             const imageBase64 = "data:image/png;base64," + Fingerprint.b64UrlTo64(samples[0]);
-            localStorage.setItem("imageSrc", imageBase64);
     
             // Generate hash for the fingerprint image
             generateHash(imageBase64).then((hash) => {
                 console.log("Fingerprint hash: ", hash);
-                localStorage.setItem("fingerprintHash", hash);  // Store the hash for later use
+    
+                // Create an object containing both the image and the hash
+                const fingerprintObject = {
+                    image: imageBase64,  // Fingerprint image (Base64 string)
+                    hash: hash          // Fingerprint hash
+                };
+    
+                // Store the object in localStorage
+                localStorage.setItem("fingerprintData", JSON.stringify(fingerprintObject));  // Store both image and hash as a single object
             });
     
-            if (state == document.getElementById("content-capture")) { 
+            // Display the fingerprint image
+            if (state == document.getElementById("content-capture")) {
                 var vDiv = document.getElementById('imagediv');
                 vDiv.innerHTML = "";
                 var image = document.createElement("img");
                 image.id = "image";
                 image.src = imageBase64;
-                vDiv.appendChild(image); 
+                vDiv.appendChild(image);
             }
     
             disableEnableExport(false);
         }
-        else if (currentFormat == Fingerprint.SampleFormat.Raw) {  
-            // If sample acquired format is RAW- perform following call on object received 
+        else if (currentFormat == Fingerprint.SampleFormat.Raw) {
+            // If sample acquired format is RAW - perform the following call on object received
             // Get samples from the object - get 0th element of samples and then get Data from it.
-            // Returned data is Base64 encoded, which needs to get decoded to UTF8,
-            // after decoding get Data key from it, it returns Base64 encoded raw image data
             localStorage.setItem("raw", "");
             var samples = JSON.parse(s.samples);
             var sampleData = Fingerprint.b64UrlTo64(samples[0].Data);
@@ -276,11 +282,9 @@ function sampleAcquired(s) {
     
             disableEnableExport(false);
         }
-        else if (currentFormat == Fingerprint.SampleFormat.Compressed) {  
-            // If sample acquired format is Compressed- perform following call on object received 
+        else if (currentFormat == Fingerprint.SampleFormat.Compressed) {
+            // If sample acquired format is Compressed - perform the following call on object received
             // Get samples from the object - get 0th element of samples and then get Data from it.
-            // Returned data is Base64 encoded, which needs to get decoded to UTF8,
-            // after decoding get Data key from it, it returns Base64 encoded wsq image
             localStorage.setItem("wsq", "");
             var samples = JSON.parse(s.samples);
             var sampleData = Fingerprint.b64UrlTo64(samples[0].Data);
@@ -292,10 +296,9 @@ function sampleAcquired(s) {
     
             disableEnableExport(false);
         }
-        else if (currentFormat == Fingerprint.SampleFormat.Intermediate) {  
-            // If sample acquired format is Intermediate- perform following call on object received 
+        else if (currentFormat == Fingerprint.SampleFormat.Intermediate) {
+            // If sample acquired format is Intermediate - perform the following call on object received
             // Get samples from the object - get 0th element of samples and then get Data from it.
-            // It returns Base64 encoded feature set
             localStorage.setItem("intermediate", "");
             var samples = JSON.parse(s.samples);
             var sampleData = Fingerprint.b64UrlTo64(samples[0].Data);
@@ -308,9 +311,8 @@ function sampleAcquired(s) {
         }
         else {
             alert("Format Error");
-            //disableEnableExport(true);
-        }    
-}
+        }
+    }
     
 
 async function generateHash(imageBase64) {
